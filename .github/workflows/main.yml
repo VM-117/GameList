@@ -18,18 +18,21 @@ jobs:
 
       - name: Show Flutter version
         run: flutter --version
-        working-directory: gamelist
+
+      - name: Create Flutter project structure (if needed)
+        run: |
+          if [ ! -d "android" ]; then
+            flutter create --platforms=android .
+          fi
 
       - name: Get dependencies
         run: flutter pub get
-        working-directory: gamelist
 
       - name: Build debug APK
         run: flutter build apk --debug
-        working-directory: gamelist
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug.apk
-          path: gamelist/build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/app-debug.apk

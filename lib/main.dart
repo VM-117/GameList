@@ -398,7 +398,6 @@ class AppState extends ChangeNotifier {
     _saveAll();
     notifyListeners();
   }
-
   void addDevice(String name) {
     final n = name.trim();
     if (n.isEmpty) return;
@@ -697,7 +696,6 @@ if (selectionMode)
       ),
     ),
   ),
-
                 const Spacer(),
                 TextButton.icon(
                   icon: const Icon(Icons.devices_outlined, size: 18),

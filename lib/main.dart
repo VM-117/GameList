@@ -5,6 +5,104 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
+
+// ===================== APP THEME =====================
+class AppTheme {
+  static final ColorScheme lightColorScheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xFF6366F1),
+    brightness: Brightness.light,
+  );
+
+  static final ColorScheme darkColorScheme = ColorScheme.fromSeed(
+    seedColor: const Color(0xFF6366F1),
+    brightness: Brightness.dark,
+  );
+
+  static ThemeData light() => _base(lightColorScheme);
+  static ThemeData dark() => _base(darkColorScheme);
+
+  static ThemeData _base(ColorScheme scheme) {
+    final base = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      brightness: scheme.brightness,
+      fontFamily: 'SF Pro Text',
+    );
+
+    final chipTheme = ChipThemeData.fromDefaults(
+      secondaryColor: scheme.primary,
+      brightness: scheme.brightness,
+      labelStyle: TextStyle(color: scheme.onSurface),
+    ).copyWith(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(999),
+      ),
+      side: BorderSide(color: scheme.outlineVariant),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+    );
+
+    return base.copyWith(
+      scaffoldBackgroundColor: scheme.surface,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scheme.surface,
+        foregroundColor: scheme.onSurface,
+        centerTitle: true,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      cardTheme: CardTheme(
+        color: scheme.surface,
+        elevation: 0,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: scheme.outlineVariant.withOpacity(0.6)),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: scheme.surface,
+        indicatorColor: scheme.primary.withOpacity(0.12),
+        labelTextStyle: MaterialStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontWeight: states.contains(MaterialState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+          ),
+        ),
+      ),
+      chipTheme: chipTheme,
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: scheme.surfaceVariant.withOpacity(
+          scheme.brightness == Brightness.dark ? 0.35 : 0.9,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: scheme.outlineVariant),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: scheme.primary),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: scheme.inverseSurface,
+        contentTextStyle: TextStyle(color: scheme.onInverseSurface),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      listTileTheme: ListTileThemeData(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+    );
+  }
+}
+
 // ===================== MODELOS =====================
 
 class Game {
@@ -100,7 +198,7 @@ class GameApiInfo {
 class GameApiService {
   // Coloque sua API key do RAWG aqui:
   // Crie uma conta em https://rawg.io/apidocs e gere a key.
-  static const String _apiKey = '9d5b6ed5d1e94a9e9f7536389a4e4032';
+  static const String _apiKey = '';
 
   static Future<GameApiInfo?> fetchInfo(String query) async {
     if (_apiKey.isEmpty) return null;
@@ -300,7 +398,6 @@ class AppState extends ChangeNotifier {
     _saveAll();
     notifyListeners();
   }
-
   void addDevice(String name) {
     final n = name.trim();
     if (n.isEmpty) return;
@@ -431,18 +528,8 @@ class _GameListAppState extends State<GameListApp> {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'GameList',
-          theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.indigo,
-            brightness: Brightness.light,
-            fontFamily: 'SF Pro Text',
-          ),
-          darkTheme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.indigo,
-            brightness: Brightness.dark,
-            fontFamily: 'SF Pro Text',
-          ),
+          theme: AppTheme.light(),
+          darkTheme: AppTheme.dark(),
           home: HomePage(state: state),
         );
       },
@@ -570,17 +657,45 @@ class _GamesPageState extends State<GamesPage> {
             ],
           ),
         ),
-        if (selectionMode)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  selectedIds.isEmpty
-                      ? 'Nenhum jogo selecionado'
-                      : '${selectedIds.length} selecionado(s)',
-                  style: const TextStyle(fontWeight: FontWeight.w500),
-                ),
+        
+if (selectionMode)
+  Padding(
+    padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, size: 18, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 8),
+          Text(
+            selectedIds.isEmpty
+                ? 'Nenhum jogo selecionado'
+                : '\${selectedIds.length} selecionado(s)',
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
+          const Spacer(),
+          TextButton.icon(
+            icon: const Icon(Icons.devices_outlined, size: 18),
+            label: const Text('Definir dispositivos'),
+            onPressed: selectedIds.isEmpty ? null : _batchSetDevices,
+          ),
+          const SizedBox(width: 8),
+          TextButton.icon(
+            icon: const Icon(Icons.checklist_outlined, size: 18),
+            label: const Text('Definir status'),
+            onPressed: selectedIds.isEmpty ? null : _batchSetStatuses,
+          ),
+        ],
+      ),
+    ),
+  ),
                 const Spacer(),
                 TextButton.icon(
                   icon: const Icon(Icons.devices_outlined, size: 18),
@@ -689,25 +804,17 @@ class _GamesPageState extends State<GamesPage> {
     );
   }
 
-  Widget _pill(String text, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14),
-          const SizedBox(width: 4),
-          Text(text),
-        ],
-      ),
+    Widget _pill(String text, IconData icon) {
+    final scheme = Theme.of(context).colorScheme;
+    return Chip(
+      avatar: Icon(icon, size: 16, color: scheme.primary),
+      label: Text(text),
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
   }
 
-  void _toggleSelection(String id) {
+void _toggleSelection(String id) {
     setState(() {
       if (selectedIds.contains(id)) {
         selectedIds.remove(id);
